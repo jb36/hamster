@@ -65,42 +65,45 @@ def hamster_round(time):
         return time.replace(second=0, microsecond=0)
 
 
-def format_duration(minutes, human = True):
+def format_duration(seconds, human = True):
     """formats duration in a human readable format.
-    accepts either minutes or timedelta
+    accepts either seconds or timedelta
 
     Deprecated: use timedelta.format() instead.
     """
 
-    minutes = duration_minutes(minutes)
+    seconds = duration_seconds(seconds)
 
-    if not minutes:
+    if not seconds:
         if human:
             return ""
         else:
-            return "00:00"
+            return "00:00:00"
 
-    if minutes < 0:
+    if seconds < 0:
         # format_duration did not work for negative values anyway
         # return a warning
         return "NEGATIVE"
 
-    hours = minutes / 60
-    minutes = minutes % 60
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
     formatted_duration = ""
 
     if human:
-        if minutes % 60 == 0:
-            # duration in round hours
-            formatted_duration += ("%dh") % (hours)
-        elif hours == 0:
-            # duration less than hour
-            formatted_duration += ("%dmin") % (minutes % 60.0)
-        else:
-            # x hours, y minutes
-            formatted_duration += ("%dh %dmin") % (hours, minutes % 60)
+        # I prefer this one
+        formatted_duration += "%02d:%02d:%02d" % (hours, minutes, seconds)
+#        if minutes % 60 == 0:
+#            # duration in round hours
+#            formatted_duration += ("%dh") % (hours)
+#        elif hours == 0:
+#            # duration less than hour
+#            formatted_duration += ("%dmin") % (minutes % 60.0)
+#        else:
+#            # x hours, y minutes, z seconds
+#            formatted_duration += ("%dh %dm %ds") % (hours, minutes, seconds)
     else:
-        formatted_duration += "%02d:%02d" % (hours, minutes)
+        formatted_duration += "%02d:%02d:%02d" % (hours, minutes, seconds)
 
 
     return formatted_duration
@@ -154,19 +157,19 @@ def month(view_date):
     return start_date, end_date
 
 
-def duration_minutes(duration):
+def duration_seconds(duration):
     """Returns minutes from duration, otherwise we keep bashing in same math.
     Deprecated, use dt.timedelta.total_minutes instead.
     """
     if isinstance(duration, dt.timedelta):
-        return duration.total_seconds() / 60
+        return duration.total_seconds()
     elif isinstance(duration, (int, float)):
         return duration
     elif isinstance(duration, list):
         res = dt.timedelta()
         for entry in duration:
             res += entry
-        return duration_minutes(res)
+        return duration_seconds(res)
     else:
         raise NotImplementedError("received {}".format(type(duration)))
 

@@ -134,20 +134,20 @@ class time(pdt.time):
     - conversion to and from string facilities
     """
 
-    FMT = "%H:%M"  # display format, e.g. 13:30
+    FMT = "%H:%M:%S"  # display format, e.g. 13:30:25
 
     def __new__(cls,
                 hour=0, minute=0,
                 second=0, microsecond=0,
                 tzinfo=None, **kwargs):
-            # round down to zero seconds and microseconds
+            # round down to zero microseconds
             return pdt.time.__new__(cls,
                                     hour=hour, minute=minute,
-                                    second=0, microsecond=0,
+                                    second=second, microsecond=0,
                                     tzinfo=None, **kwargs)
 
     @classmethod
-    def _extract_time(cls, match, h="hour", m="minute"):
+    def _extract_time(cls, match, h="hour", m="minute", s="second"):
         """Extract time from a time.re match.
 
         Custom group names allow to use the same method
@@ -155,15 +155,18 @@ class time(pdt.time):
 
         h (str): name of the group containing the hour
         m (str): name of the group containing the minute
+        s (str): name of the group containing the minute
 
-        seealso: time.parse
+        see also: time.parse
         """
         h_str = match.group(h)
         m_str = match.group(m)
-        if h_str and m_str:
+        s_str = match.group(s)
+        if h_str and m_str and s_str:
             hour = int(h_str)
             minute = int(m_str)
-            return cls(hour, minute)
+            second = int(s_str)
+            return cls(hour, minute, second)
         else:
             return None
 
@@ -197,6 +200,15 @@ class time(pdt.time):
                                               # might be caught as 2:01.
                                               # Requiring space or - would not work:
                                               # 2019-2025 is the 20:19-20:25 range.
+            [,\.:]?                           # Separator can be colon,
+                                              # dot, comma, or nothing.
+            (?P<second>[0-5][0-9])            # second (2 digits, between 00 and 59)
+            (?!\d?-\d{2}-\d{2})               # Negative lookahead:
+                                              # avoid matching date by inadvertance.
+                                              # For instance 2019-12-05
+                                              # might be caught as 2:01.
+                                              # Requiring space or - would not work:
+                                              # 2019-2025 is the 20:19-20:25 range.
             """)
 
 
@@ -210,11 +222,11 @@ class datetime(pdt.datetime):
 
     Should replace the python datetime.datetime in any customer code.
     Specificities:
-    - rounded to minutes
+    - rounded to seconds
     - conversion to and from string facilities
     """
 
-    # display format, e.g. 2020-01-20 20:40
+    # display format, e.g. 2020-01-20 20:40:35
     FMT = "{} {}".format(date.FMT, time.FMT)
 
     def __new__(cls, year, month, day,
@@ -224,7 +236,7 @@ class datetime(pdt.datetime):
             # round down to zero seconds and microseconds
             return pdt.datetime.__new__(cls, year, month, day,
                                         hour=hour, minute=minute,
-                                        second=0, microsecond=0,
+                                        second=second, microsecond=0,
                                         tzinfo=None, **kwargs)
 
     def __add__(self, other):
@@ -259,7 +271,7 @@ class datetime(pdt.datetime):
             return self.strftime(self.FMT)
 
     @classmethod
-    def _extract_datetime(cls, match, d="date", h="hour", m="minute", r="relative",
+    def _extract_datetime(cls, match, d="date", h="hour", m="minute", s="second", r="relative",
                           default_day=None):
         """extract datetime from a datetime.pattern match.
 
@@ -268,11 +280,12 @@ class datetime(pdt.datetime):
 
         h (str): name of the group containing the hour
         m (str): name of the group containing the minute
+        s (str): name of the group containing the second
         r (str): name of the group containing the relative time
         default_day (dt.date): the datetime will belong to this hamster day if
                                date is missing.
         """
-        _time = time._extract_time(match, h, m)
+        _time = time._extract_time(match, h, m, s)
         if _time:
             date_str = match.group(d)
             if date_str:
@@ -388,7 +401,7 @@ class datetime(pdt.datetime):
             return base_pattern
         else:
             to_replace = ("whole", "relative",
-                          "year", "month", "day", "date", "tens", "hour", "minute")
+                          "year", "month", "day", "date", "tens", "hour", "minute", "second")
             specifics = ["{}{}".format(s, n) for s in to_replace]
             res = base_pattern
             for src, dest in zip(to_replace, specifics):
@@ -532,7 +545,8 @@ class Range():
         else:
             firstday = None
             start = datetime._extract_datetime(m, d="date1", h="hour1",
-                                               m="minute1", r="relative1",
+                                               m="minute1", s="second1",
+                                               r="relative1",
                                                default_day=default_day)
             if isinstance(start, pdt.timedelta):
                 # relative to ref, actually
@@ -550,7 +564,8 @@ class Range():
         else:
             end_default_day = start.hday() if start else default_day
             end = datetime._extract_datetime(m, d="date2", h="hour2",
-                                             m="minute2", r="relative2",
+                                             m="minute2", s="second2",
+                                             r="relative2",
                                              default_day=end_default_day)
             if isinstance(end, pdt.timedelta):
                 # relative to ref, actually
@@ -564,7 +579,7 @@ class Range():
     def pattern(cls):
         return dedent(r"""
             (                    # start
-              {}                 # datetime: relative1 or (date1, hour1, and minute1)
+              {}                 # datetime: relative1 or (date1, hour1, minute1, and second1)
               |                  # or
               (?P<firstday>{})  # date without time
             )
@@ -578,7 +593,7 @@ class Range():
                     \s            # one space exactly
                 )
             (                     # end
-              {}                  # datetime: relative2 or (date2, hour2, and minute2)
+              {}                  # datetime: relative2 or (date2, hour2, minute2, and second2)
               |                   # or
               (?P<lastday>{})     # date without time
               |
@@ -694,7 +709,7 @@ class timedelta(pdt.timedelta):
 
     def format(self, fmt="human"):
         """Return a string representation, according to the format string fmt."""
-        allowed = ("human", "HH:MM")
+        allowed = ("human", "HH:MM:SS")
 
         # TODO: should use total_minutes
         total_s = self.total_seconds()
@@ -704,8 +719,11 @@ class timedelta(pdt.timedelta):
 
         hours = int(total_s // 3600)
         minutes = int((total_s - 3600 * hours) // 60)
+        seconds = int(total_s - 3600 * hours - 60 * minutes)
 
         if fmt == "human":
+            # I prefer this one
+            return "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
             if minutes % 60 == 0:
                 # duration in round hours
                 return "{}h".format(hours)
@@ -713,10 +731,10 @@ class timedelta(pdt.timedelta):
                 # duration less than one hour
                 return "{}min".format(minutes)
             else:
-                # x hours, y minutes
-                return "{}h {}min".format(hours, minutes)
-        elif fmt == "HH:MM":
-            return "{:02d}:{:02d}".format(hours, minutes)
+                # x hours, y minutes, z seconds
+                return "{}h {}m {}s".format(hours, minutes, seconds)
+        elif fmt == "HH:MM:SS":
+            return "{:02d}:{:02d}:{:02d}".format(hours, minutes, seconds)
         else:
             raise NotImplementedError(
                 "'{}' not in allowed formats: {}".format(fmt, allowed))

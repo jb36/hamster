@@ -234,7 +234,7 @@ class HTMLWriter(ReportWriter):
         # no having end time is fine
         end_time_str, end_time_iso_str = "", ""
         if fact.end_time:
-            end_time_str = fact.end_time.strftime('%H:%M')
+            end_time_str = fact.end_time.strftime('%H:%M:%S')
             end_time_iso_str = fact.end_time.isoformat()
 
         category = ""
@@ -252,7 +252,7 @@ class HTMLWriter(ReportWriter):
             activity = html.escape(fact.activity),
             category = html.escape(category),
             tags = html.escape(", ".join(fact.tags)),
-            start = fact.start_time.strftime('%H:%M'),
+            start = fact.start_time.strftime('%H:%M:%S'),
             start_iso = fact.start_time.isoformat(),
             end = end_time_str,
             end_iso = end_time_iso_str,

@@ -69,7 +69,7 @@ class Storage(object):
                 Duration would be negative.
                 Working late ?
                 This happens when the activity crosses the
-                hamster day start time ({:%H:%M} from tracking settings).
+                hamster day start time ({:%H:%M:%S} from tracking settings).
 
                 Suggestion: move the end to the next day; the range would become:
                 {}

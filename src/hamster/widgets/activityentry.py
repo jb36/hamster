@@ -395,9 +395,9 @@ class CmdLineEntry(gtk.Entry):
         matches = sorted(matches, key=lambda x: x[1], reverse=True)[:7]
 
         for match, score in matches:
-            label = (fact.start_time or now).strftime("%H:%M")
+            label = (fact.start_time or now).strftime("%H:%M:%S")
             if fact.end_time:
-                label += fact.end_time.strftime("-%H:%M")
+                label += fact.end_time.strftime("-%H:%M:%S")
 
             markup_label = label + " " + (stuff.escape_pango(match).replace(search, "<b>%s</b>" % search) if search else match)
             label += " " + match
@@ -426,14 +426,14 @@ class CmdLineEntry(gtk.Entry):
 
         if fact.start_time is None:
             description = "start now"
-            variant = now.strftime("%H:%M ")
+            variant = now.strftime("%H:%M:%S ")
             variants.append((description, variant))
 
             prev_fact = self.todays_facts[-1] if self.todays_facts else None
             if prev_fact and prev_fact.end_time:
                 since = (now - prev_fact.end_time).format()
                 description = "from previous activity, %s ago" % since
-                variant = prev_fact.end_time.strftime("%H:%M ")
+                variant = prev_fact.end_time.strftime("%H:%M:%S ")
                 variants.append((description, variant))
 
             description = "start activity -n minutes ago (1 or 3 digits allowed)"

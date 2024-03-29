@@ -172,7 +172,7 @@ class TimeInput(gtk.Entry):
     def _format_time(self, time):
         if time is None:
             return ""
-        return time.strftime("%H:%M").lower()
+        return time.strftime("%H:%M:%S").lower()
 
 
     def _on_focus_in_event(self, entry, event):

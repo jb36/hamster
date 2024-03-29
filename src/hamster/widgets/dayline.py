@@ -56,7 +56,7 @@ class Selection(graphics.Sprite):
         # adjust labels
         self.start_label.visible = self.start_time is not None and self.start_time != self.end_time
         if self.start_label.visible:
-            self.start_label.text = self.start_time.strftime("%H:%M")
+            self.start_label.text = self.start_time.strftime("%H:%M:%S")
             if self.x - self.start_label.width - 5 > 0:
                 self.start_label.x = -self.start_label.width - 5
             else:
@@ -66,7 +66,7 @@ class Selection(graphics.Sprite):
 
         self.end_label.visible = self.end_time is not None and self.start_time != self.end_time
         if self.end_label.visible:
-            self.end_label.text = self.end_time.strftime("%H:%M")
+            self.end_label.text = self.end_time.strftime("%H:%M:%S")
             self.end_label.x = self.width + 5
             self.end_label.y = self.height + 2
 

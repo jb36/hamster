@@ -244,7 +244,7 @@ class HorizontalBarChart(graphics.Sprite):
         bar_start_x = label_width + margin
         for i, (label, value) in enumerate(self.values):
             g.set_color(self.label_color)
-            duration_str = value.format(fmt="HH:MM")
+            duration_str = value.format(fmt="HH:MM:SS")
             markup_label = stuff.escape_pango(str(label))
             markup_duration = stuff.escape_pango(duration_str)
             self.layout.set_markup("{}, <i>{}</i>".format(markup_label, markup_duration))
@@ -336,8 +336,7 @@ class Totals(graphics.Scene):
 
         self.stacked_bar.set_items([(cat, delta.total_seconds() / 60.0) for cat, delta in totals['category']])
 
-        grand_total = sum(delta.total_seconds() / 60
-                          for __, delta in totals['activity'])
+        grand_total = sum(delta.total_seconds() for __, delta in totals['activity'])
         self.category_totals.markup = "<b>Total: </b>%s; " % stuff.format_duration(grand_total)
         self.category_totals.markup += ", ".join("<b>%s:</b> %s" % (stuff.escape_pango(cat), stuff.format_duration(hours)) for cat, hours in totals['category'])
 

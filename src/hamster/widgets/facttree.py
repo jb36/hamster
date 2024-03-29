@@ -76,7 +76,7 @@ class Label(object):
         self._label_context = cairo.Context(cairo.ImageSurface(cairo.FORMAT_A1, 0, 0))
         self.layout = pangocairo.create_layout(self._label_context)
         self.layout.set_font_description(pango.FontDescription(graphics._font_desc))
-        self.set_text("00:00 - 00:00")  # dummy time_label for finding width
+        self.set_text("00:00:00 - 00:00:00")  # dummy time_label for finding width
 
     @property
     def height(self):
@@ -171,9 +171,9 @@ class FactRow(object):
 
         self.fact = fact
 
-        time_label = fact.start_time.strftime("%H:%M -")
+        time_label = fact.start_time.strftime("%H:%M:%S -")
         if fact.end_time:
-            time_label += fact.end_time.strftime(" %H:%M")
+            time_label += fact.end_time.strftime(" %H:%M:%S")
         self.time_label.set_text(time_label)
 
         self.activity_label.set_text(stuff.escape_pango(fact.activity))

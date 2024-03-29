@@ -70,9 +70,9 @@ def word_wrap(line, max_len):
 def fact_dict(fact_data, with_date):
     fact = {}
     if with_date:
-        fmt = '%Y-%m-%d %H:%M'
+        fmt = '%Y-%m-%d %H:%M:%S'
     else:
-        fmt = '%H:%M'
+        fmt = '%H:%M:%S'
 
     fact['start'] = fact_data.start_time.strftime(fmt)
     if fact_data.end_time:
@@ -320,7 +320,7 @@ class HamsterCli(object):
         facts = self.storage.get_todays_facts()
         if facts and not facts[-1].end_time:
             print("{} {}".format(str(facts[-1]).strip(),
-                                 facts[-1].delta.format(fmt="HH:MM")))
+                                 facts[-1].delta.format(fmt="HH:MM:SS")))
         else:
             print((_("No activity")))
 
